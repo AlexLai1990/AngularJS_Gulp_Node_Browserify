@@ -1,0 +1,22 @@
+{
+  "name": "gulp_template",
+  "version": "1.0.0",
+  "description": "Template for gulp + browserify + nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexLai1990/AngularJS_Gulp_Node_Browserify.git"
+  },
+  "keywords": [
+    "frontendTemplate"
+  ],
+  "author": "alex",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexLai1990/AngularJS_Gulp_Node_Browserify/issues"
+  },
+  "homepage": "https://github.com/AlexLai1990/AngularJS_Gulp_Node_Browserify#readme"
+}
