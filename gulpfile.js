@@ -1,19 +1,19 @@
-var gulp = require('gulp')
-var connect = require('gulp-connect')
-var less = require('gulp-less')
-var gutil = require('gulp-util')
-var uglify = require('gulp-uglify')
-var del = require('del'); // rm -rf
+var gulp = require('gulp');
+var connect = require('gulp-connect');
+var less = require('gulp-less');
+var gutil = require('gulp-util');
+var uglify = require('gulp-uglify');
+var del = require('del');
 
 // for unstop the piped stream and continue watch
-var plumber = require('gulp-plumber')
-var tap        = require('gulp-tap')
-var gulpif     = require('gulp-if')
-var streamify  = require('gulp-streamify')
+var plumber = require('gulp-plumber');
+var tap        = require('gulp-tap');
+var gulpif     = require('gulp-if');
+var streamify  = require('gulp-streamify');
 
 // requires browserify and vinyl-source-stream
-var browserify = require('browserify')
-var source = require('vinyl-source-stream')
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
 
 // plugins for minify css
 var LessPluginCleanCSS = require('less-plugin-clean-css'),
@@ -21,80 +21,43 @@ var LessPluginCleanCSS = require('less-plugin-clean-css'),
     cleancss = new LessPluginCleanCSS({ advanced: true }),
     autoprefix= new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
 
+var args   = require('yargs').argv;
+
 gulp.task('connect', function () {
     connect.server({
         root: 'public',
         port: 4000
-    })
-})
+    });
+});
 
-gulp.task('clean', function() {
-    return del(['output']);
-})
-
-var isDebug = false;
+var isProduction = args.env === 'production';
 
 // bundles all js file to main.js
-gulp.task('browserify', ['clean'], function() {
-    //return gulp.src("app/app.js")
-    //    .pipe(plumber())
-    //    .pipe(tap(
-    //        function (file)
-    //        {
-    //            var d = require('domain').create();
-    //            d.on("error",
-    //                function (err) {
-    //                    gutil.log(gutil.colors.red("Browserify compile error:"), err.message, "\n",
-    //                        gutil.colors.cyan("in file"), err.toString());
-    //                    gutil.beep();
-    //                }
-    //            );
-    //            d.run(function () {
-    //                file.contents = browserify({
-    //                    entries: [file.path],
-    //                    debug: isDebug
-    //                }).bundle();
-    //            });
-    //        }
-    //    ))
-    //    .pipe(gulpif(!isDebug, streamify(uglify({
-    //        compress: true
-    //    }))))
-    //    .pipe(gulp.dest('./public/js/'))
-
+gulp.task('browserify', function() {
+    // clean the prevoius js version
+    del(['public/js/*.js']);
     return browserify('app/app.js')
         .bundle()
         .on('error', function (err) {
-            //console.log(err.toString());
-            //this.emit("end");
             gutil.log(
                 gutil.colors.red('Browserify compile error:'),
                 err.message
             );
             gutil.beep();
-            this.emit('end'); // Ends the task
+            // Ends the task
+            this.emit('end');
         })
         .pipe(source('main.js'))
-        // saves it the public/js/ directory
         .pipe(gulp.dest('./public/js/'));
+});
 
-})
-
-gulp.task('watch', function(){
-    // Watches for changes for js
-    gulp.watch('app/**/*.js', ['browserify'])
-    // Watches for changes for css
-    gulp.watch('public/css/*.less', ['less'])
-})
-
-gulp.task('less', ['clean'], function () {
-    var l = less({
-        plugins: [autoprefix, cleancss]
-    });
-    //l.on('error',function(e){
-    //    gutil.log(e);
-    //    l.end();
-    //});
+gulp.task('less', function () {
+    // delete previous css
+    del(['public/css/main.css']);
+    var l = less({});
+    if (isProduction) {
+        l = less({plugins: [autoprefix, cleancss]});
+    }
     return gulp.src('public/css/*.less')
         .pipe(plumber({
             errorHandler: function (err) {
@@ -103,9 +66,20 @@ gulp.task('less', ['clean'], function () {
             }}))
         .pipe(l)
         .on('error', gutil.log)
-        .pipe(gulp.dest('public/css/'))
-        ;
+        .pipe(gulp.dest('public/css/'));
+});
+
+gulp.task('clean', function() {
+    del(['public/js/*.js']);
+    del(['public/css/main.css']);
+});
+
+gulp.task('watch', function(){
+    // Watches for changes for js
+    gulp.watch('app/**/*.js', ['browserify']);
+    // Watches for changes for css
+    gulp.watch('public/css/*.less', ['less']);
 });
 
 // default tasks
-gulp.task('default', ['connect', 'watch'])
+gulp.task('default', ['connect', 'browserify', 'less', 'watch']);

@@ -2,8 +2,23 @@
 
 Set up
 
+1. Install NodeJS: brew install node
 
-gulp: auto build, debug for js
+2. Install gulp for global use: npm install gulp -g
+
+3. Install all dependencies: npm install
+
+4. Run:
+
+    gulp // run local mode
+
+    gulp --env production  // run production mode which includes minified css
+
+
+REF:
+
+
+gulp: auto build, debug and run tasks for js
 
 
 browserify: generete bunddled JS file(public/js/)
